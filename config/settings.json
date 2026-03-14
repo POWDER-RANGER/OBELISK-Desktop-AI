@@ -1,0 +1,20 @@
+{
+  "ollama": {
+    "host": "http://localhost:11434",
+    "model": "llama3",
+    "temperature": 0.3,
+    "context_window": 4096,
+    "timeout_seconds": 60
+  },
+  "ui_automation": {
+    "action_delay_ms": 150,
+    "screenshot_on_error": true,
+    "verbose_logging": false,
+    "element_timeout_seconds": 5
+  },
+  "session": {
+    "max_history": 50,
+    "persist_context": true,
+    "session_dir": "%TEMP%"
+  }
+}

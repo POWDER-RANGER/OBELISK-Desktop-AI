@@ -1,0 +1,77 @@
+name: OBELISK-Desktop-AI CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: PowerShell Lint
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+      
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $results = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Warning,Error
+          if ($results) {
+            $results | Format-Table -AutoSize
+            Write-Error "PSScriptAnalyzer found $($results.Count) issue(s)"
+          } else {
+            Write-Host "PSScriptAnalyzer: No issues found" -ForegroundColor Green
+          }
+
+  test:
+    name: Unit Tests
+    runs-on: windows-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Session Manager Tests
+        shell: pwsh
+        run: .\tests\Test-Orchestrator.ps1
+      
+      - name: Validate Config
+        shell: pwsh
+        run: |
+          $config = Get-Content .\config\settings.json | ConvertFrom-Json
+          if (-not $config.ollama.host) { throw "Missing ollama.host in settings.json" }
+          Write-Host "Config validation passed" -ForegroundColor Green
+
+  structure:
+    name: Validate Repo Structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check required files exist
+        run: |
+          required=(
+            "OBELISK.ps1"
+            "core/Orchestrator.ps1"
+            "core/OllamaClient.ps1"
+            "core/SessionManager.ps1"
+            "modules/UIAutomation.ps1"
+            "modules/AppLauncher.ps1"
+            "modules/InputSimulator.ps1"
+            "modules/ScreenReader.ps1"
+            "config/settings.json"
+            "README.md"
+            "LICENSE"
+          )
+          for f in "${required[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "MISSING: $f"
+              exit 1
+            else
+              echo "OK: $f"
+            fi
+          done

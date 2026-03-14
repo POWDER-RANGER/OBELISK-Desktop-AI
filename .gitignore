@@ -1,0 +1,24 @@
+# OBELISK-Desktop-AI .gitignore
+
+# Session files
+*.session.json
+obelisk_session_*.json
+
+# Screenshots
+obelisk_screen_*.png
+
+# Logs
+*.log
+logs/
+
+# Config overrides (user-specific)
+config/settings.local.json
+
+# PowerShell
+*.ps1xml
+Modules/
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
